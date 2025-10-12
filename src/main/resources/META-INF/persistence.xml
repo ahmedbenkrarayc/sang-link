@@ -11,6 +11,7 @@
         <class>com.sanglink.entity.MedicalAssessment</class>
         <class>com.sanglink.entity.Donor</class>
         <class>com.sanglink.entity.Receiver</class>
+        <class>com.sanglink.entity.Donation</class>
 
         <properties>
 
