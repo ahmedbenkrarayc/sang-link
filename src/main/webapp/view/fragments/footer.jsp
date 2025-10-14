@@ -10,7 +10,7 @@
       </div>
       <div class="mt-4 md:mt-0 md:order-1">
         <p class="text-center text-sm text-gray-500">
-          &copy; 2025 LifeSource Donor System. All rights reserved.
+          &copy; 2025 SangLink Donor System. All rights reserved.
         </p>
       </div>
     </div>
