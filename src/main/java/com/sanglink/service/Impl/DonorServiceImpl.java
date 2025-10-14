@@ -1,0 +1,105 @@
+package com.sanglink.service.Impl;
+
+import com.sanglink.dto.request.CreateDonorRequest;
+import com.sanglink.entity.Donation;
+import com.sanglink.entity.Donor;
+import com.sanglink.entity.MedicalAssessment;
+import com.sanglink.entity.Receiver;
+import com.sanglink.entity.enums.DonorStatus;
+import com.sanglink.mapper.DonorMapper;
+import com.sanglink.repository.DonorRepository;
+import com.sanglink.repository.MedicalAssessmentRepository;
+import com.sanglink.service.DonorService;
+import com.sanglink.util.validation.request.CreateDonorRequestValidator;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+public class DonorServiceImpl implements DonorService {
+
+    private final DonorRepository donorRepository;
+    private final MedicalAssessmentRepository assessmentRepository;
+
+    public DonorServiceImpl(DonorRepository donorRepository, MedicalAssessmentRepository assessmentRepository) {
+        this.donorRepository = donorRepository;
+        this.assessmentRepository = assessmentRepository;
+    }
+
+    @Override
+    public List<String> createDonor(CreateDonorRequest req) {
+        //Validate request
+        List<String> errors = CreateDonorRequestValidator.validate(req);
+        if (!errors.isEmpty()) return errors;
+
+        //Unique CIN
+        if (donorRepository.findByCin(req.cin()).isPresent()) {
+            errors.add("Donor already exists with CIN: " + req.cin());
+            return errors;
+        }
+
+        //Map to entities
+        Donor donor = DonorMapper.toDonor(req);
+        MedicalAssessment assessment = DonorMapper.toMedicalAssessment(req, donor);
+
+        //Link: donor -> assessment
+        donor.setMedicalAssessments(List.of(assessment));
+        assessment.setDonor(donor);
+
+        //Determine status using the newly created assessment
+        DonorStatus status = determineStatus(donor, assessment);
+        donor.setStatus(status);
+
+        Donor saved = donorRepository.save(donor);
+        if (assessment.getDonor() != null && saved.getId() != null) {
+            assessment.setDonor(saved);
+        }
+        assessmentRepository.save(assessment);
+
+        return List.of();
+    }
+
+    @Override
+    public Optional<Donor> findByCin(String cin) {
+        return donorRepository.findByCin(cin);
+    }
+
+    private DonorStatus determineStatus(Donor donor, MedicalAssessment assessment) {
+        int age = Optional.ofNullable(donor.getBirthday())
+                .map(b -> Period.between(b, LocalDate.now()).getYears())
+                .orElse(0);
+
+        boolean hasContra = assessment.isHepatiteB()
+                || assessment.isHepatiteC()
+                || assessment.isVih()
+                || assessment.isDiabeteInsulin()
+                || assessment.isGrossesse()
+                || assessment.isAllaitement();
+
+        if (age < 18 || age > 65 || donor.getWeight() < 50 || hasContra) {
+            return DonorStatus.NON_ELIGIBLE;
+        }
+
+        // donation count
+        long donations = Optional.ofNullable(donor.getDonations())
+                .map(List::stream)
+                .orElseGet(Stream::empty)
+                .count();
+        if (donations >= 1) return DonorStatus.NOT_AVAILABLE;
+
+        //receiver association: distinct receiver ids count >=1
+        boolean hasReceiver = Optional.ofNullable(donor.getDonations())
+                .map(list -> list.stream()
+                        .map(Donation::getReceiver)
+                        .filter(r -> r != null)
+                        .map(Receiver::getId)
+                        .distinct()
+                        .count() >= 1)
+                .orElse(false);
+        if (hasReceiver) return DonorStatus.NOT_AVAILABLE;
+
+        return DonorStatus.DISPONIBLE;
+    }
+}
