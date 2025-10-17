@@ -8,5 +8,4 @@ import java.util.Optional;
 
 public interface DonorService {
     List<String> createDonor(CreateDonorRequest req);
-    Optional<Donor> findByCin(String cin);
 }

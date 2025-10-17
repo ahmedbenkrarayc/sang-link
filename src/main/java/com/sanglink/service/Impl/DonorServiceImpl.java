@@ -9,6 +9,7 @@ import com.sanglink.entity.enums.DonorStatus;
 import com.sanglink.mapper.DonorMapper;
 import com.sanglink.repository.DonorRepository;
 import com.sanglink.repository.MedicalAssessmentRepository;
+import com.sanglink.repository.UserRepository;
 import com.sanglink.service.DonorService;
 import com.sanglink.util.validation.request.CreateDonorRequestValidator;
 
@@ -22,10 +23,12 @@ public class DonorServiceImpl implements DonorService {
 
     private final DonorRepository donorRepository;
     private final MedicalAssessmentRepository assessmentRepository;
+    private final UserRepository userRepository;
 
-    public DonorServiceImpl(DonorRepository donorRepository, MedicalAssessmentRepository assessmentRepository) {
+    public DonorServiceImpl(DonorRepository donorRepository, MedicalAssessmentRepository assessmentRepository, UserRepository userRepository) {
         this.donorRepository = donorRepository;
         this.assessmentRepository = assessmentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class DonorServiceImpl implements DonorService {
         if (!errors.isEmpty()) return errors;
 
         //Unique CIN
-        if (donorRepository.findByCin(req.cin()).isPresent()) {
+        if (userRepository.findByCin(req.cin()).isPresent()) {
             errors.add("Donor already exists with CIN: " + req.cin());
             return errors;
         }
@@ -59,11 +62,6 @@ public class DonorServiceImpl implements DonorService {
         assessmentRepository.save(assessment);
 
         return List.of();
-    }
-
-    @Override
-    public Optional<Donor> findByCin(String cin) {
-        return donorRepository.findByCin(cin);
     }
 
     private DonorStatus determineStatus(Donor donor, MedicalAssessment assessment) {

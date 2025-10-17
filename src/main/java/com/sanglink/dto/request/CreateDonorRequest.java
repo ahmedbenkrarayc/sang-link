@@ -1,5 +1,6 @@
 package com.sanglink.dto.request;
 
+import com.sanglink.dto.request.contract.CreateUserRequest;
 import com.sanglink.entity.enums.BloodGroup;
 import com.sanglink.entity.enums.Gender;
 
@@ -21,4 +22,4 @@ public record CreateDonorRequest(
         boolean diabeteInsulin,
         boolean grossesse,
         boolean allaitement
-) {}
+) implements CreateUserRequest {}

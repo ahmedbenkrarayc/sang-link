@@ -2,13 +2,16 @@ package com.sanglink.controller;
 
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.dao.MedicalAssessmentDAO;
+import com.sanglink.dao.UserDAO;
 import com.sanglink.dao.impl.DonorDAOImpl;
 import com.sanglink.dao.impl.MedicalAssessmentDAOImpl;
+import com.sanglink.dao.impl.UserDAOImpl;
 import com.sanglink.dto.request.CreateDonorRequest;
 import com.sanglink.entity.enums.BloodGroup;
 import com.sanglink.entity.enums.Gender;
 import com.sanglink.repository.impl.DonorRepositoryImpl;
 import com.sanglink.repository.impl.MedicalAssessmentRepositoryImpl;
+import com.sanglink.repository.impl.UserRepositoryImpl;
 import com.sanglink.service.DonorService;
 import com.sanglink.service.Impl.DonorServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -40,11 +43,13 @@ public class DonorServlet extends HttpServlet {
 
         DonorDAO donorDAO = new DonorDAOImpl(em);
         MedicalAssessmentDAO assessmentDAO = new MedicalAssessmentDAOImpl(em);
+        UserDAO userDAO = new UserDAOImpl(em);
 
         var donorRepo = new DonorRepositoryImpl(donorDAO);
         var assessmentRepo = new MedicalAssessmentRepositoryImpl(assessmentDAO);
+        var userRepo = new UserRepositoryImpl(userDAO);
 
-        this.donorService = new DonorServiceImpl(donorRepo, assessmentRepo);
+        this.donorService = new DonorServiceImpl(donorRepo, assessmentRepo, userRepo);
     }
 
     @Override
