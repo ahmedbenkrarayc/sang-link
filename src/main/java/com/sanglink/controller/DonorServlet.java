@@ -1,5 +1,6 @@
 package com.sanglink.controller;
 
+import com.sanglink.controller.handler.DonorControllerHandler;
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.dao.MedicalAssessmentDAO;
 import com.sanglink.dao.UserDAO;
@@ -29,6 +30,7 @@ public class DonorServlet extends HttpServlet {
 
     private DonorService donorService;
     private EntityManager em;
+    private final DonorControllerHandler donorHandler = new DonorControllerHandler();
 
     @Override
     public void init() throws ServletException {
@@ -55,54 +57,27 @@ public class DonorServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        String path = req.getPathInfo();
 
-        req.setAttribute("genders", Gender.values());
-        req.setAttribute("bloodGroups", BloodGroup.values());
-
-        req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
+        if (path == null || "/".equals(path)) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }else if (path.equals("/create")) {
+            donorHandler.create(req, resp);
+        }else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        try {
-            CreateDonorRequest request = new CreateDonorRequest(
-                    req.getParameter("cin"),
-                    req.getParameter("nom"),
-                    req.getParameter("prenom"),
-                    req.getParameter("phone"),
-                    LocalDate.parse(req.getParameter("birthday")),
-                    Gender.valueOf(req.getParameter("gender")),
-                    BloodGroup.valueOf(req.getParameter("bloodGroup")),
-                    Double.parseDouble(req.getParameter("weight")),
-                    Boolean.parseBoolean(req.getParameter("hepatiteB")),
-                    Boolean.parseBoolean(req.getParameter("hepatiteC")),
-                    Boolean.parseBoolean(req.getParameter("vih")),
-                    Boolean.parseBoolean(req.getParameter("diabeteInsulin")),
-                    Boolean.parseBoolean(req.getParameter("grossesse")),
-                    Boolean.parseBoolean(req.getParameter("allaitement"))
-            );
+        String path = req.getPathInfo();
 
-            List<String> errors = donorService.createDonor(request);
-
-            req.setAttribute("genders", Gender.values());
-            req.setAttribute("bloodGroups", BloodGroup.values());
-
-            if (!errors.isEmpty()) {
-                req.setAttribute("errors", errors);
-            } else {
-                req.setAttribute("success", "Donor created successfully!");
-            }
-
-            req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
-
-        } catch (IllegalArgumentException ex) {
-            req.setAttribute("errors", List.of("Invalid input: " + ex.getMessage()));
-            req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
-        } catch (Exception ex) {
-            req.setAttribute("errors", List.of("Something went wrong please try again later !"));
-            req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
+        if (path.equals("/create")) {
+            donorHandler.store(req, resp, donorService);
+        }else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 

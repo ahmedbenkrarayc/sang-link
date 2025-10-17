@@ -1,5 +1,6 @@
 package com.sanglink.controller;
 
+import com.sanglink.controller.handler.ReceiverControllerHandler;
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.dao.MedicalAssessmentDAO;
 import com.sanglink.dao.ReceiverDAO;
@@ -33,6 +34,7 @@ import java.util.List;
 public class ReceiverServlet extends HttpServlet {
     private ReceiverService receiverService;
     private EntityManager em;
+    private final ReceiverControllerHandler receiverHandler = new ReceiverControllerHandler();
 
     @Override
     public void init() throws ServletException {
@@ -56,35 +58,28 @@ public class ReceiverServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.setAttribute("genders", Gender.values());
-        req.setAttribute("bloodGroups", BloodGroup.values());
-        req.setAttribute("needs", Need.values());
-        req.getRequestDispatcher("/view/receivers/create.jsp").forward(req, resp);
+        String path = req.getPathInfo();
+
+        if (path == null || "/".equals(path)) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }else if (path.equals("/create")) {
+            receiverHandler.create(req, resp);
+        }else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        CreateReceiverRequest request = new CreateReceiverRequest(
-                req.getParameter("cin"),
-                req.getParameter("nom"),
-                req.getParameter("prenom"),
-                req.getParameter("phone"),
-                LocalDate.parse(req.getParameter("birthday")),
-                Gender.valueOf(req.getParameter("gender")),
-                BloodGroup.valueOf(req.getParameter("bloodGroup")),
-                Need.valueOf(req.getParameter("need"))
-        );
+        String path = req.getPathInfo();
 
-        List<String> errors = receiverService.createReceiver(request);
-        req.setAttribute("genders", Gender.values());
-        req.setAttribute("bloodGroups", BloodGroup.values());
-        req.setAttribute("needs", Need.values());
-        if (!errors.isEmpty()) req.setAttribute("errors", errors);
-        else req.setAttribute("success", "Receiver created successfully!");
-
-        req.getRequestDispatcher("/view/receivers/create.jsp").forward(req, resp);
+        if (path.equals("/create")) {
+            receiverHandler.store(req, resp, receiverService);
+        }else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Override
