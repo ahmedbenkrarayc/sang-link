@@ -15,6 +15,7 @@ import com.sanglink.util.validation.request.CreateDonorRequestValidator;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -100,4 +101,33 @@ public class DonorServiceImpl implements DonorService {
 
         return DonorStatus.DISPONIBLE;
     }
+
+    @Override
+    public List<Donor> getDonors(int page, int pageSize, String search, DonorStatus status) {
+        return donorRepository.findAll(page, pageSize, search, status);
+    }
+
+    @Override
+    public long countDonors(String search, DonorStatus status) {
+        return donorRepository.countAll(search, status);
+    }
+
+    @Override
+    public List<String> deleteDonor(Long id) {
+        List<String> errors = new ArrayList<>();
+
+        var donor = donorRepository.findById(id);
+        if (donor == null) {
+            errors.add("Donor not found");
+            return errors;
+        }
+
+        boolean deleted = userRepository.deleteById(id);
+        if (!deleted) {
+            errors.add("Failed to delete donor. Please try again.");
+        }
+
+        return errors;
+    }
+
 }

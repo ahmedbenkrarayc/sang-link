@@ -60,7 +60,7 @@ public class DonorServlet extends HttpServlet {
         String path = req.getPathInfo();
 
         if (path == null || "/".equals(path)) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            donorHandler.index(req, resp, donorService);
         }else if (path.equals("/create")) {
             donorHandler.create(req, resp);
         }else {
@@ -80,6 +80,34 @@ public class DonorServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        try {
+            Long id = Long.parseLong(req.getParameter("id"));
+            List<String> errors = donorService.deleteDonor(id);
+
+            resp.setContentType("application/json");
+
+            if (!errors.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"status\":\"error\",\"errors\":" + errors + "}");
+                return;
+            }
+
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write("{\"status\":\"success\",\"message\":\"Donor deleted successfully.\"}");
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid donor ID.\"}");
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
 
     @Override
     public void destroy() {

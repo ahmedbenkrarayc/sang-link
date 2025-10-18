@@ -2,6 +2,7 @@ package com.sanglink.repository.impl;
 
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.entity.Donor;
+import com.sanglink.entity.enums.DonorStatus;
 import com.sanglink.repository.DonorRepository;
 
 import java.util.List;
@@ -22,5 +23,12 @@ public class DonorRepositoryImpl implements DonorRepository {
     public Optional<Donor> findById(Long id) { return donorDAO.findById(id); }
 
     @Override
-    public List<Donor> findAll() { return donorDAO.findAll(); }
+    public List<Donor> findAll(int page, int pageSize, String search, DonorStatus status) {
+        return donorDAO.findAll(page, pageSize, search, status);
+    }
+
+    @Override
+    public long countAll(String search, DonorStatus status) {
+        return donorDAO.countAll(search, status);
+    }
 }

@@ -3,6 +3,7 @@ package com.sanglink.dao.impl;
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.MedicalAssessment;
+import com.sanglink.entity.enums.DonorStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
@@ -47,7 +48,75 @@ public class DonorDAOImpl implements DonorDAO {
     }
 
     @Override
-    public List<Donor> findAll() {
-        return em.createQuery("SELECT d FROM Donor d", Donor.class).getResultList();
+    public List<Donor> findAll(int page, int pageSize, String search, DonorStatus status) {
+        StringBuilder jpql = new StringBuilder("""
+            SELECT DISTINCT d 
+            FROM Donor d
+            JOIN FETCH d.medicalAssessments a
+            WHERE a.id = (
+                SELECT MAX(a2.id)
+                FROM MedicalAssessment a2
+                WHERE a2.donor = d
+            )
+        """);
+
+        if (search != null && !search.isBlank()) {
+            jpql.append(" AND (LOWER(d.cin) LIKE LOWER(:search) OR LOWER(d.nom) LIKE LOWER(:search) OR LOWER(d.prenom) LIKE LOWER(:search))");
+        }
+
+        if (status != null) {
+            jpql.append(" AND d.status = :status");
+        }
+
+        jpql.append(" ORDER BY d.id DESC");
+
+        TypedQuery<Donor> query = em.createQuery(jpql.toString(), Donor.class);
+
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+
+        if (status != null) {
+            query.setParameter("status", status);
+        }
+
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public long countAll(String search, DonorStatus status) {
+        StringBuilder jpql = new StringBuilder("""
+            SELECT COUNT(DISTINCT d) 
+            FROM Donor d 
+            JOIN d.medicalAssessments a
+            WHERE a.id = (
+                SELECT MAX(a2.id)
+                FROM MedicalAssessment a2
+                WHERE a2.donor = d
+            )
+        """);
+
+        if (search != null && !search.isBlank()) {
+            jpql.append(" AND (LOWER(d.cin) LIKE LOWER(:search) OR LOWER(d.nom) LIKE LOWER(:search) OR LOWER(d.prenom) LIKE LOWER(:search))");
+        }
+
+        if (status != null) {
+            jpql.append(" AND d.status = :status");
+        }
+
+        var query = em.createQuery(jpql.toString(), Long.class);
+
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+
+        if (status != null) {
+            query.setParameter("status", status);
+        }
+
+        return query.getSingleResult();
     }
 }

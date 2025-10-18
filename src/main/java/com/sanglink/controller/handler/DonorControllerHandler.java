@@ -1,7 +1,9 @@
 package com.sanglink.controller.handler;
 
 import com.sanglink.dto.request.CreateDonorRequest;
+import com.sanglink.entity.Donor;
 import com.sanglink.entity.enums.BloodGroup;
+import com.sanglink.entity.enums.DonorStatus;
 import com.sanglink.entity.enums.Gender;
 import com.sanglink.service.DonorService;
 import jakarta.servlet.ServletException;
@@ -13,6 +15,33 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class DonorControllerHandler {
+    public void index(HttpServletRequest req, HttpServletResponse resp, DonorService donorService) throws ServletException, IOException {
+        String search = req.getParameter("search");
+        String statusParam = req.getParameter("status");
+        int page = parseIntOrDefault(req.getParameter("page"), 1);
+        int pageSize = parseIntOrDefault(req.getParameter("pageSize"), 10);
+
+        DonorStatus status = null;
+        if (statusParam != null && !statusParam.isBlank()) {
+            try {
+                status = DonorStatus.valueOf(statusParam);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        List<Donor> donors = donorService.getDonors(page, pageSize, search, status);
+        long total = donorService.countDonors(search, status);
+        long totalPages = (long) Math.ceil((double) total / pageSize);
+
+        req.setAttribute("donors", donors);
+        req.setAttribute("currentPage", page);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("search", search);
+        req.setAttribute("selectedStatus", status);
+        req.setAttribute("statuses", DonorStatus.values());
+
+        req.getRequestDispatcher("/view/donors/list.jsp").forward(req, resp);
+    }
+
     public void create(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -62,6 +91,14 @@ public class DonorControllerHandler {
         } catch (Exception ex) {
             req.setAttribute("errors", List.of("Something went wrong please try again later !"));
             req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
+        }
+    }
+
+    private int parseIntOrDefault(String param, int def) {
+        try {
+            return (param == null || param.isBlank()) ? def : Integer.parseInt(param);
+        } catch (NumberFormatException e) {
+            return def;
         }
     }
 }
