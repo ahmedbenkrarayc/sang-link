@@ -61,7 +61,7 @@ public class ReceiverServlet extends HttpServlet {
         String path = req.getPathInfo();
 
         if (path == null || "/".equals(path)) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            receiverHandler.index(req, resp, receiverService);
         }else if (path.equals("/create")) {
             receiverHandler.create(req, resp);
         }else {
@@ -80,6 +80,12 @@ public class ReceiverServlet extends HttpServlet {
         }else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        receiverHandler.drop(req, resp, receiverService);
     }
 
     @Override

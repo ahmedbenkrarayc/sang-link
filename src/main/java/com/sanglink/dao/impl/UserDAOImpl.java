@@ -20,4 +20,23 @@ public class UserDAOImpl implements UserDAO {
                 .getResultList();
         return result.stream().findFirst();
     }
+
+    @Override
+    public boolean deleteById(Long id) {
+        var tx = em.getTransaction();
+        try {
+            tx.begin();
+            User user = em.find(User.class, id);
+            if (user != null) {
+                em.remove(user);
+                tx.commit();
+                return true;
+            }
+            tx.rollback();
+            return false;
+        } catch (RuntimeException ex) {
+            if (tx.isActive()) tx.rollback();
+            throw ex;
+        }
+    }
 }

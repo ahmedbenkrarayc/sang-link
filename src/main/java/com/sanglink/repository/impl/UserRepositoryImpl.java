@@ -16,4 +16,9 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findByCin(String cin) {
         return userDAO.findByCin(cin);
     }
+
+    @Override
+    public boolean deleteById(Long id) {
+        return userDAO.deleteById(id);
+    }
 }

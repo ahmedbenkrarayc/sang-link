@@ -4,6 +4,7 @@ import com.sanglink.dto.request.CreateReceiverRequest;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.Receiver;
 import com.sanglink.entity.User;
+import com.sanglink.entity.enums.Need;
 import com.sanglink.entity.enums.ReceiverStatus;
 import com.sanglink.mapper.ReceiverMapper;
 import com.sanglink.repository.ReceiverRepository;
@@ -48,5 +49,33 @@ public class ReceiverServiceImpl implements ReceiverService {
         receiverRepository.save(receiver);
 
         return List.of();
+    }
+
+    @Override
+    public List<Receiver> getReceivers(int page, int pageSize, String search, Need need) {
+        return receiverRepository.findAll(page, pageSize, search, need);
+    }
+
+    @Override
+    public long countReceivers(String search, Need need) {
+        return receiverRepository.countAll(search, need);
+    }
+
+    @Override
+    public List<String> deleteReceiver(Long id) {
+        List<String> errors = new ArrayList<>();
+
+        var receiver = receiverRepository.findById(id);
+        if (receiver == null) {
+            errors.add("Receiver not found");
+            return errors;
+        }
+
+        boolean deleted = userRepository.deleteById(id);
+        if (!deleted) {
+            errors.add("Failed to delete receiver. Please try again.");
+        }
+
+        return errors;
     }
 }
