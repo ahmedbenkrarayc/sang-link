@@ -27,9 +27,9 @@ public class Donor extends User {
     @Column(nullable = false)
     private DonorStatus status;
 
-    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Donation> donations;
 
-    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicalAssessment> medicalAssessments;
 }
