@@ -84,30 +84,8 @@ public class DonorServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        try {
-            Long id = Long.parseLong(req.getParameter("id"));
-            List<String> errors = donorService.deleteDonor(id);
-
-            resp.setContentType("application/json");
-
-            if (!errors.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("{\"status\":\"error\",\"errors\":" + errors + "}");
-                return;
-            }
-
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write("{\"status\":\"success\",\"message\":\"Donor deleted successfully.\"}");
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid donor ID.\"}");
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}");
-        }
+        donorHandler.drop(req, resp, donorService);
     }
-
 
     @Override
     public void destroy() {
