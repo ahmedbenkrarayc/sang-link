@@ -22,6 +22,6 @@ public class Receiver extends User {
     @Column(nullable = false)
     private ReceiverStatus status;
 
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Donation> donations;
 }
