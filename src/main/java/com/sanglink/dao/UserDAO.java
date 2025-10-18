@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface UserDAO {
     Optional<User> findByCin(String cin);
+    boolean deleteById(Long id);
 }
