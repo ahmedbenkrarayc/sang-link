@@ -1,6 +1,7 @@
 package com.sanglink.controller.handler;
 
 import com.sanglink.dto.request.CreateReceiverRequest;
+import com.sanglink.dto.request.UpdateReceiverRequest;
 import com.sanglink.entity.Receiver;
 import com.sanglink.entity.enums.BloodGroup;
 import com.sanglink.entity.enums.Gender;
@@ -107,6 +108,92 @@ public class ReceiverControllerHandler {
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    public void edit(HttpServletRequest req, HttpServletResponse resp, ReceiverService receiverService)
+            throws ServletException, IOException {
+        try {
+            Long id = Long.parseLong(req.getParameter("id"));
+
+            var receiverOpt = receiverService.getReceiverById(id);
+            if (receiverOpt.isEmpty()) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Receiver not found");
+                return;
+            }
+
+            req.setAttribute("receiver", receiverOpt.get());
+            req.setAttribute("genders", Gender.values());
+            req.setAttribute("bloodGroups", BloodGroup.values());
+            req.setAttribute("needs", Need.values());
+
+            req.getRequestDispatcher("/view/receivers/edit.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid receiver ID");
+        } catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
+        }
+    }
+
+    public void update(HttpServletRequest req, HttpServletResponse resp, ReceiverService receiverService)
+            throws ServletException, IOException {
+        try {
+            Long id = Long.parseLong(req.getParameter("id"));
+
+            var receiverOpt = receiverService.getReceiverById(id);
+            if (receiverOpt.isEmpty()) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Receiver not found");
+                return;
+            }
+
+            System.out.println("id=" + id);
+            System.out.println("cin=" + req.getParameter("cin"));
+            System.out.println("nom=" + req.getParameter("nom"));
+            System.out.println("prenom=" + req.getParameter("prenom"));
+            System.out.println("phone=" + req.getParameter("phone"));
+            System.out.println("birthday=" + req.getParameter("birthday"));
+            System.out.println("gender=" + req.getParameter("gender"));
+            System.out.println("bloodGroup=" + req.getParameter("bloodGroup"));
+            System.out.println("need=" + req.getParameter("need"));
+
+            UpdateReceiverRequest request = new UpdateReceiverRequest(
+                    id,
+                    req.getParameter("cin"),
+                    req.getParameter("nom"),
+                    req.getParameter("prenom"),
+                    req.getParameter("phone"),
+                    LocalDate.parse(req.getParameter("birthday")),
+                    Gender.valueOf(req.getParameter("gender")),
+                    BloodGroup.valueOf(req.getParameter("bloodGroup")),
+                    Need.valueOf(req.getParameter("need"))
+            );
+
+            List<String> errors = receiverService.updateReceiver(request);
+
+            req.setAttribute("receiver", receiverOpt.get());
+            req.setAttribute("genders", Gender.values());
+            req.setAttribute("bloodGroups", BloodGroup.values());
+            req.setAttribute("needs", Need.values());
+
+            if (!errors.isEmpty()) {
+                req.setAttribute("errors", errors);
+            } else {
+                req.setAttribute("success", "Receiver updated successfully!");
+                receiverService.getReceiverById(id).ifPresent(r -> req.setAttribute("receiver", r));
+            }
+
+            req.getRequestDispatcher("/view/receivers/edit.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid receiver ID");
+        } catch (IllegalArgumentException e) {
+            req.setAttribute("errors", List.of("Invalid input: " + e.getMessage()));
+            req.getRequestDispatcher("/view/receivers/edit.jsp").forward(req, resp);
+        } catch (Exception e) {
+            System.out.println("==================>"+e.getMessage());
+            req.setAttribute("errors", List.of("Something went wrong, please try again later!"));
+            req.getRequestDispatcher("/view/receivers/edit.jsp").forward(req, resp);
         }
     }
 

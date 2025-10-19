@@ -1,6 +1,8 @@
 package com.sanglink.service;
 
 import com.sanglink.dto.request.CreateReceiverRequest;
+import com.sanglink.dto.request.UpdateDonorRequest;
+import com.sanglink.dto.request.UpdateReceiverRequest;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.Receiver;
 import com.sanglink.entity.enums.Need;
@@ -13,4 +15,6 @@ public interface ReceiverService {
     List<Receiver> getReceivers(int page, int pageSize, String search, Need need);
     long countReceivers(String search, Need need);
     List<String> deleteReceiver(Long id);
+    Optional<Receiver> getReceiverById(Long id);
+    List<String> updateReceiver(UpdateReceiverRequest req);
 }

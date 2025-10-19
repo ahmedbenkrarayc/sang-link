@@ -1,6 +1,7 @@
 package com.sanglink.service.Impl;
 
 import com.sanglink.dto.request.CreateReceiverRequest;
+import com.sanglink.dto.request.UpdateReceiverRequest;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.Receiver;
 import com.sanglink.entity.User;
@@ -11,6 +12,7 @@ import com.sanglink.repository.ReceiverRepository;
 import com.sanglink.repository.UserRepository;
 import com.sanglink.service.ReceiverService;
 import com.sanglink.util.validation.request.CreateReceiverRequestValidator;
+import com.sanglink.util.validation.request.UpdateReceiverRequestValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,4 +80,38 @@ public class ReceiverServiceImpl implements ReceiverService {
 
         return errors;
     }
+
+    @Override
+    public Optional<Receiver> getReceiverById(Long id) {
+        return receiverRepository.findById(id);
+    }
+
+    @Override
+    public List<String> updateReceiver(UpdateReceiverRequest req) {
+        List<String> errors = new ArrayList<>();
+
+        errors.addAll(UpdateReceiverRequestValidator.validate(req));
+        if (!errors.isEmpty()) return errors;
+
+        Optional<Receiver> optionalReceiver = receiverRepository.findById(req.id());
+        if (optionalReceiver.isEmpty()) {
+            errors.add("Receiver not found with ID: " + req.id());
+            return errors;
+        }
+
+        Receiver receiver = optionalReceiver.get();
+
+        receiver.setCin(req.cin());
+        receiver.setNom(req.nom());
+        receiver.setPrenom(req.prenom());
+        receiver.setPhone(req.phone());
+        receiver.setBirthday(req.birthday());
+        receiver.setGender(req.gender());
+        receiver.setBloodGroup(req.bloodGroup());
+
+        receiverRepository.save(receiver);
+
+        return List.of();
+    }
+
 }

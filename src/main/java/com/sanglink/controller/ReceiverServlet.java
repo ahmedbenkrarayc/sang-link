@@ -64,6 +64,8 @@ public class ReceiverServlet extends HttpServlet {
             receiverHandler.index(req, resp, receiverService);
         }else if (path.equals("/create")) {
             receiverHandler.create(req, resp);
+        }else if (path.equals("/edit")) {
+            receiverHandler.edit(req, resp, receiverService);
         }else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -77,6 +79,8 @@ public class ReceiverServlet extends HttpServlet {
 
         if (path.equals("/create")) {
             receiverHandler.store(req, resp, receiverService);
+        }if (path.equals("/edit")) {
+            receiverHandler.update(req, resp, receiverService);
         }else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
