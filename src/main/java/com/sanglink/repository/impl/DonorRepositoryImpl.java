@@ -31,4 +31,9 @@ public class DonorRepositoryImpl implements DonorRepository {
     public long countAll(String search, DonorStatus status) {
         return donorDAO.countAll(search, status);
     }
+
+    @Override
+    public List<Donor> findAvailableCompatibleDonors(Long receiverId) {
+        return donorDAO.findAvailableCompatibleDonors(receiverId);
+    }
 }

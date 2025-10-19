@@ -12,4 +12,5 @@ public interface DonorService {
     List<Donor> getDonors(int page, int pageSize, String search, DonorStatus status);
     long countDonors(String search, DonorStatus status);
     List<String> deleteDonor(Long id);
+    List<Donor> getAvailableCompatibleDonors(Long receiverId);
 }

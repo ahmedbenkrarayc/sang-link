@@ -17,4 +17,5 @@ public interface DonorDAO {
     List<Donor> findAll(int page, int pageSize, String search, DonorStatus status);
 
     long countAll(String search, DonorStatus status);
+    List<Donor> findAvailableCompatibleDonors(Long receiverId);
 }

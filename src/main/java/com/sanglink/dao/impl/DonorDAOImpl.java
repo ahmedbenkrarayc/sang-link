@@ -3,6 +3,8 @@ package com.sanglink.dao.impl;
 import com.sanglink.dao.DonorDAO;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.MedicalAssessment;
+import com.sanglink.entity.Receiver;
+import com.sanglink.entity.enums.BloodGroup;
 import com.sanglink.entity.enums.DonorStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -118,5 +120,48 @@ public class DonorDAOImpl implements DonorDAO {
         }
 
         return query.getSingleResult();
+    }
+
+    @Override
+    public List<Donor> findAvailableCompatibleDonors(Long receiverId) {
+        Receiver receiver = em.find(Receiver.class, receiverId);
+        if (receiver == null) return List.of();
+
+        List<BloodGroup> compatibleGroups = getCompatibleBloodGroups(receiver.getBloodGroup());
+
+        String jpql = """
+            SELECT d FROM Donor d
+            WHERE d.status = :status
+              AND d.bloodGroup IN :compatibleGroups
+        """;
+
+        TypedQuery<Donor> query = em.createQuery(jpql, Donor.class);
+        query.setParameter("status", DonorStatus.DISPONIBLE);
+        query.setParameter("compatibleGroups", compatibleGroups);
+
+        return query.getResultList();
+    }
+
+    private List<BloodGroup> getCompatibleBloodGroups(BloodGroup receiverGroup) {
+        return switch (receiverGroup) {
+            case A_POSITIVE -> List.of(
+                    BloodGroup.A_POSITIVE, BloodGroup.A_NEGATIVE,
+                    BloodGroup.O_POSITIVE, BloodGroup.O_NEGATIVE);
+            case A_NEGATIVE -> List.of(BloodGroup.A_NEGATIVE, BloodGroup.O_NEGATIVE);
+            case B_POSITIVE -> List.of(
+                    BloodGroup.B_POSITIVE, BloodGroup.B_NEGATIVE,
+                    BloodGroup.O_POSITIVE, BloodGroup.O_NEGATIVE);
+            case B_NEGATIVE -> List.of(BloodGroup.B_NEGATIVE, BloodGroup.O_NEGATIVE);
+            case AB_POSITIVE -> List.of(
+                    BloodGroup.A_POSITIVE, BloodGroup.A_NEGATIVE,
+                    BloodGroup.B_POSITIVE, BloodGroup.B_NEGATIVE,
+                    BloodGroup.AB_POSITIVE, BloodGroup.AB_NEGATIVE,
+                    BloodGroup.O_POSITIVE, BloodGroup.O_NEGATIVE);
+            case AB_NEGATIVE -> List.of(
+                    BloodGroup.A_NEGATIVE, BloodGroup.B_NEGATIVE,
+                    BloodGroup.AB_NEGATIVE, BloodGroup.O_NEGATIVE);
+            case O_POSITIVE -> List.of(BloodGroup.O_POSITIVE, BloodGroup.O_NEGATIVE);
+            case O_NEGATIVE -> List.of(BloodGroup.O_NEGATIVE);
+        };
     }
 }

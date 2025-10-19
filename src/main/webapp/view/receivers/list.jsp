@@ -218,10 +218,258 @@
             background: #dc2626;
             color: white;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            padding: 24px;
+            color: white;
+            border-radius: 16px 16px 0 0;
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .donor-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .donor-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .donor-item:hover {
+            background: #f1f5f9;
+            border-color: #3b82f6;
+        }
+
+        .donor-item.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .donor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        .donor-info {
+            flex: 1;
+        }
+
+        .donor-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .donor-details {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .donor-blood {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+            color: #dc2626;
+        }
+
+        .no-donors {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .no-donors i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .modal-footer {
+            padding: 20px 24px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #f9fafb;
+        }
+
+        .btn-confirm {
+            padding: 10px 20px;
+            border: none;
+            background: #10b981;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .btn-confirm:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading-spinner i {
+            font-size: 32px;
+            color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 <jsp:include page="../fragments/nav.jsp"/>
+
+<div id="linkDonorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="close-btn" onclick="closeLinkModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-title">Link Compatible Donor</div>
+            <div class="modal-subtitle" id="modalReceiverName"></div>
+        </div>
+        <div class="modal-body">
+            <div id="donorListContent">
+                <!-- Donor list will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeLinkModal()">Cancel</button>
+            <button type="button" class="btn-confirm" id="confirmLinkBtn" disabled onclick="confirmLink()">
+                Link Donor
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="mb-8">
@@ -301,8 +549,30 @@
                             <c:set var="neededPockets" value="1" />
                         </c:otherwise>
                     </c:choose>
-                    <c:set var="receivedPockets" value="0" />
-                    <c:set var="progressPercent" value="${(receivedPockets / neededPockets) * 100}" />
+
+                    <!-- Calculate received pockets based on actual donations -->
+                    <c:choose>
+                        <c:when test="${not empty receiver.donations}">
+                            <c:set var="receivedPockets" value="${receiver.donations.size()}" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="receivedPockets" value="0" />
+                        </c:otherwise>
+                    </c:choose>
+
+                    <!-- Calculate progress percentage -->
+                    <c:choose>
+                        <c:when test="${neededPockets > 0}">
+                            <c:set var="progressPercent" value="${(receivedPockets / neededPockets) * 100}" />
+                            <!-- Ensure progress doesn't exceed 100% -->
+                            <c:if test="${progressPercent > 100}">
+                                <c:set var="progressPercent" value="100" />
+                            </c:if>
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="progressPercent" value="0" />
+                        </c:otherwise>
+                    </c:choose>
 
                     <div class="receiver-card" data-need="${receiver.need}">
                         <div class="card-header">
@@ -356,7 +626,7 @@
                                     <i class="fas fa-edit"></i>
                                     <span>Edit</span>
                                 </button>
-                                <button onclick="linkDonor(${receiver.id}, '${receiver.prenom} ${receiver.nom}')"
+                                <button onclick="openLinkModal(${receiver.id}, '${receiver.prenom} ${receiver.nom}')"
                                         class="action-btn btn-link">
                                     <i class="fas fa-link"></i>
                                     <span>Link Donor</span>
@@ -448,12 +718,166 @@
 <jsp:include page="../fragments/footer.jsp"/>
 
 <script>
+    let currentReceiverId = null;
+    let selectedDonorId = null;
+
     function editReceiver(receiverId) {
         window.location.href = '${pageContext.request.contextPath}/receiver/edit?id=' + receiverId;
     }
 
-    function linkDonor(receiverId, receiverName) {
-        window.location.href = '${pageContext.request.contextPath}/donation/create?receiverId=' + receiverId;
+    function openLinkModal(receiverId, receiverName) {
+        currentReceiverId = receiverId;
+        selectedDonorId = null;
+
+        document.getElementById('modalReceiverName').textContent = receiverName;
+        document.getElementById('confirmLinkBtn').disabled = true;
+
+        document.getElementById('donorListContent').innerHTML =
+            '<div class="loading-spinner">' +
+            '<i class="fas fa-spinner"></i>' +
+            '<div style="margin-top: 16px; font-size: 14px; color: #6b7280;">Loading compatible donors...</div>' +
+            '</div>';
+
+        document.getElementById('linkDonorModal').style.display = 'flex';
+
+        fetchCompatibleDonors(receiverId);
+    }
+
+    function closeLinkModal() {
+        document.getElementById('linkDonorModal').style.display = 'none';
+        currentReceiverId = null;
+        selectedDonorId = null;
+    }
+
+    function fetchCompatibleDonors(receiverId) {
+        fetch('${pageContext.request.contextPath}/donor/compatible?receiverId=' + receiverId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(donors => {
+                if (!donors || (Array.isArray(donors) && donors.length === 0)) {
+                    showNoDonorsMessage();
+                } else {
+                    displayDonors(donors);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching compatible donors:', error);
+                showErrorMessage();
+            });
+    }
+
+    function showNoDonorsMessage() {
+        document.getElementById('donorListContent').innerHTML =
+            '<div class="no-donors">' +
+            '<i class="fas fa-users-slash"></i>' +
+            '<div>No compatible donors found</div>' +
+            '<p class="text-sm mt-2 text-gray-500">There are no available donors with compatible blood type.</p>' +
+            '</div>';
+    }
+
+    function showErrorMessage() {
+        document.getElementById('donorListContent').innerHTML =
+            '<div class="no-donors">' +
+            '<i class="fas fa-exclamation-triangle"></i>' +
+            '<div>Error loading donors</div>' +
+            '<p class="text-sm mt-2 text-gray-500">Please try again later.</p>' +
+            '</div>';
+    }
+
+    function displayDonors(donors) {
+        if (!donors || !Array.isArray(donors) || donors.length === 0) {
+            showNoDonorsMessage();
+            return;
+        }
+
+        let html = '<div class="donor-list">';
+
+        donors.forEach(donor => {
+            if (!donor || !donor.id || !donor.prenom || !donor.nom) {
+                console.warn('Invalid donor object:', donor);
+                return;
+            }
+
+            const bloodGroupDisplay = getBloodGroupDisplay(donor.bloodGroup);
+            const initials = (donor.prenom.charAt(0) + donor.nom.charAt(0)).toUpperCase();
+            const cin = donor.cin || 'N/A';
+            const status = donor.status || 'UNKNOWN';
+
+            html +=
+                '<div class="donor-item" onclick="selectDonor(' + donor.id + ', this)">' +
+                '<div class="donor-avatar">' + initials + '</div>' +
+                '<div class="donor-info">' +
+                '<div class="donor-name">' + donor.prenom + ' ' + donor.nom + '</div>' +
+                '<div class="donor-details">' +
+                cin + ' • ' + status +
+                '</div>' +
+                '</div>' +
+                '<div class="donor-blood">' + bloodGroupDisplay + '</div>' +
+                '</div>';
+        });
+
+        html += '</div>';
+        document.getElementById('donorListContent').innerHTML = html;
+
+        if (document.querySelectorAll('.donor-item').length === 0) {
+            showNoDonorsMessage();
+        }
+    }
+
+    function selectDonor(donorId, element) {
+        document.querySelectorAll('.donor-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        element.classList.add('selected');
+
+        selectedDonorId = donorId;
+
+        document.getElementById('confirmLinkBtn').disabled = false;
+    }
+
+    function confirmLink() {
+        if (!currentReceiverId || !selectedDonorId) {
+            return;
+        }
+
+        fetch('${pageContext.request.contextPath}/donation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'receiverId=' + currentReceiverId + '&donorId=' + selectedDonorId + '&volume=1'
+        })
+            .then(response => {
+                if (response.ok) {
+                    closeLinkModal();
+                    location.reload();
+                } else {
+                    alert('Error linking donor to receiver');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error linking donor to receiver');
+            });
+    }
+
+    function getBloodGroupDisplay(bloodGroup) {
+        const bloodGroupMap = {
+            'A_POSITIVE': 'A+',
+            'A_NEGATIVE': 'A-',
+            'B_POSITIVE': 'B+',
+            'B_NEGATIVE': 'B-',
+            'AB_POSITIVE': 'AB+',
+            'AB_NEGATIVE': 'AB-',
+            'O_POSITIVE': 'O+',
+            'O_NEGATIVE': 'O-'
+        };
+        return bloodGroupMap[bloodGroup] || bloodGroup;
     }
 
     function deleteReceiver(receiverId, receiverName) {
@@ -470,6 +894,14 @@
                 console.error('Error:', error);
                 alert('Error deleting receiver');
             });
+        }
+    }
+
+    //Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('linkDonorModal');
+        if (event.target === modal) {
+            closeLinkModal();
         }
     }
 

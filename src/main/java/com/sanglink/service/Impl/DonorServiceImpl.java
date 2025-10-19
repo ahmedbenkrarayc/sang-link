@@ -130,4 +130,8 @@ public class DonorServiceImpl implements DonorService {
         return errors;
     }
 
+    @Override
+    public List<Donor> getAvailableCompatibleDonors(Long receiverId) {
+        return donorRepository.findAvailableCompatibleDonors(receiverId);
+    }
 }
