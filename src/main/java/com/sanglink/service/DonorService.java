@@ -1,6 +1,7 @@
 package com.sanglink.service;
 
 import com.sanglink.dto.request.CreateDonorRequest;
+import com.sanglink.dto.request.UpdateDonorRequest;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.enums.DonorStatus;
 
@@ -13,4 +14,6 @@ public interface DonorService {
     long countDonors(String search, DonorStatus status);
     List<String> deleteDonor(Long id);
     List<Donor> getAvailableCompatibleDonors(Long receiverId);
+    Optional<Donor> getDonorById(Long id);
+    List<String> updateDonor(UpdateDonorRequest req);
 }

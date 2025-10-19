@@ -1,6 +1,7 @@
 package com.sanglink.service.Impl;
 
 import com.sanglink.dto.request.CreateDonorRequest;
+import com.sanglink.dto.request.UpdateDonorRequest;
 import com.sanglink.entity.Donation;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.MedicalAssessment;
@@ -12,6 +13,7 @@ import com.sanglink.repository.MedicalAssessmentRepository;
 import com.sanglink.repository.UserRepository;
 import com.sanglink.service.DonorService;
 import com.sanglink.util.validation.request.CreateDonorRequestValidator;
+import com.sanglink.util.validation.request.UpdateDonorRequestValidator;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -134,4 +136,38 @@ public class DonorServiceImpl implements DonorService {
     public List<Donor> getAvailableCompatibleDonors(Long receiverId) {
         return donorRepository.findAvailableCompatibleDonors(receiverId);
     }
+
+    @Override
+    public Optional<Donor> getDonorById(Long id) {
+        return donorRepository.findById(id);
+    }
+
+    @Override
+    public List<String> updateDonor(UpdateDonorRequest req) {
+        List<String> errors = new ArrayList<>(UpdateDonorRequestValidator.validate(req));
+
+        if (!errors.isEmpty()) return errors;
+
+        Optional<Donor> optionalDonor = donorRepository.findById(req.id());
+        if (optionalDonor.isEmpty()) {
+            errors.add("Donor not found with ID: " + req.id());
+            return errors;
+        }
+
+        Donor donor = optionalDonor.get();
+
+        donor.setCin(req.cin());
+        donor.setNom(req.nom());
+        donor.setPrenom(req.prenom());
+        donor.setPhone(req.phone());
+        donor.setBirthday(req.birthday());
+        donor.setGender(req.gender());
+        donor.setBloodGroup(req.bloodGroup());
+        donor.setWeight(req.weight());
+
+        donorRepository.save(donor);
+
+        return List.of();
+    }
+
 }

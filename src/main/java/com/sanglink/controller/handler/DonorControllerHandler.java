@@ -1,6 +1,7 @@
 package com.sanglink.controller.handler;
 
 import com.sanglink.dto.request.CreateDonorRequest;
+import com.sanglink.dto.request.UpdateDonorRequest;
 import com.sanglink.entity.Donor;
 import com.sanglink.entity.enums.BloodGroup;
 import com.sanglink.entity.enums.DonorStatus;
@@ -116,6 +117,80 @@ public class DonorControllerHandler {
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}");
+        }
+    }
+
+    public void edit(HttpServletRequest req, HttpServletResponse resp, DonorService donorService)
+            throws ServletException, IOException {
+        try {
+            Long id = Long.parseLong(req.getParameter("id"));
+
+            Donor donor = donorService.getDonorById(id).orElse(null);
+
+            if (donor == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Donor not found");
+                return;
+            }
+
+            req.setAttribute("donor", donor);
+            req.setAttribute("genders", Gender.values());
+            req.setAttribute("bloodGroups", BloodGroup.values());
+
+            req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid donor ID");
+        } catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
+        }
+    }
+
+    public void update(HttpServletRequest req, HttpServletResponse resp, DonorService donorService)
+            throws ServletException, IOException {
+        try {
+            Long id = Long.parseLong(req.getParameter("id"));
+
+            Donor existingDonor = donorService.getDonorById(id).orElse(null);
+            if (existingDonor == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Donor not found");
+                return;
+            }
+
+            UpdateDonorRequest request = new UpdateDonorRequest(
+                    id,
+                    req.getParameter("cin"),
+                    req.getParameter("nom"),
+                    req.getParameter("prenom"),
+                    req.getParameter("phone"),
+                    LocalDate.parse(req.getParameter("birthday")),
+                    Gender.valueOf(req.getParameter("gender")),
+                    BloodGroup.valueOf(req.getParameter("bloodGroup")),
+                    Double.parseDouble(req.getParameter("weight"))
+            );
+
+            List<String> errors = donorService.updateDonor(request);
+
+            req.setAttribute("genders", Gender.values());
+            req.setAttribute("bloodGroups", BloodGroup.values());
+            req.setAttribute("donor", existingDonor);
+
+            if (!errors.isEmpty()) {
+                req.setAttribute("errors", errors);
+            } else {
+                req.setAttribute("success", "Donor updated successfully!");
+                donorService.getDonorById(id).ifPresent(d -> req.setAttribute("donor", d));
+            }
+
+            req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid donor ID");
+        } catch (IllegalArgumentException e) {
+            req.setAttribute("errors", List.of("Invalid input: " + e.getMessage()));
+            req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
+        } catch (Exception e) {
+            req.setAttribute("errors", List.of("Something went wrong, please try again later!"));
+            req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
         }
     }
 

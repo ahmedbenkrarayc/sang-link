@@ -62,6 +62,8 @@ public class DonorServlet extends HttpServlet {
             donorHandler.create(req, resp);
         }else if (path.equals("/compatible")) {
             donationHandler.index(req, resp, donorService);
+        }else if (path.equals("/edit")) {
+            donorHandler.edit(req, resp, donorService);
         }else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -75,6 +77,8 @@ public class DonorServlet extends HttpServlet {
 
         if (path.equals("/create")) {
             donorHandler.store(req, resp, donorService);
+        }if (path.equals("/edit")) {
+            donorHandler.update(req, resp, donorService);
         }else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
