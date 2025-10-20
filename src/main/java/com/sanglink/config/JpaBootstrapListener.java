@@ -17,7 +17,7 @@ public class JpaBootstrapListener implements ServletContextListener {
         System.out.println("Initializing JPA...");
 
         Dotenv dotenv = Dotenv.configure()
-                .directory(System.getProperty("user.dir"))
+                .directory(System.getProperty("/home/ahmed/sanglink"))//user.dir
                 .ignoreIfMissing()
                 .load();
 
