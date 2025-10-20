@@ -5,7 +5,7 @@
       <div class="flex justify-center md:justify-start">
         <div class="flex-shrink-0 flex items-center">
           <i class="fas fa-heartbeat text-accent text-xl mr-2"></i>
-          <span class="text-lg font-bold text-gray-800">LifeSource</span>
+          <span class="text-lg font-bold text-gray-800">SangLink</span>
         </div>
       </div>
       <div class="mt-4 md:mt-0 md:order-1">
