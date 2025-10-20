@@ -10,12 +10,16 @@ import com.sanglink.service.DonorService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 public class DonorControllerHandler {
+    private static final Logger logger = LoggerFactory.getLogger(DonorControllerHandler.class);
+
     public void index(HttpServletRequest req, HttpServletResponse resp, DonorService donorService) throws ServletException, IOException {
         String search = req.getParameter("search");
         String statusParam = req.getParameter("status");
@@ -40,6 +44,7 @@ public class DonorControllerHandler {
         req.setAttribute("selectedStatus", status);
         req.setAttribute("statuses", DonorStatus.values());
 
+        logger.info("Displayed donor list: page={}, pageSize={}, search={}, status={}", page, pageSize, search, status);
         req.getRequestDispatcher("/view/donors/list.jsp").forward(req, resp);
     }
 
@@ -49,6 +54,7 @@ public class DonorControllerHandler {
         req.setAttribute("genders", Gender.values());
         req.setAttribute("bloodGroups", BloodGroup.values());
 
+        logger.info("Accessed donor creation page");
         req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
     }
 
@@ -80,23 +86,26 @@ public class DonorControllerHandler {
 
             if (!errors.isEmpty()) {
                 req.setAttribute("errors", errors);
+                logger.warn("Donor create validation errors: {}", errors);
             } else {
                 req.setAttribute("success", "Donor created successfully!");
+                logger.info("Created donor with CIN: {}", request.cin());
             }
 
             req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
-
         } catch (IllegalArgumentException ex) {
             req.setAttribute("errors", List.of("Invalid input: " + ex.getMessage()));
+            logger.error("Failed to create donor due to invalid input", ex);
             req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
         } catch (Exception ex) {
-            req.setAttribute("errors", List.of("Something went wrong please try again later !"));
+            req.setAttribute("errors", List.of("Something went wrong please try again later!"));
+            logger.error("Unexpected error while creating donor", ex);
             req.getRequestDispatcher("/view/donors/create.jsp").forward(req, resp);
         }
     }
 
     public void drop(HttpServletRequest req, HttpServletResponse resp, DonorService donorService)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         try {
             Long id = Long.parseLong(req.getParameter("id"));
             List<String> errors = donorService.deleteDonor(id);
@@ -104,17 +113,21 @@ public class DonorControllerHandler {
             resp.setContentType("application/json");
 
             if (!errors.isEmpty()) {
+                logger.error("Delete donor failed! Errors: {}", errors);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().write("{\"status\":\"error\",\"errors\":" + errors + "}");
                 return;
             }
 
+            logger.info("Deleted donor with ID: {}", id);
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("{\"status\":\"success\",\"message\":\"Donor deleted successfully.\"}");
         } catch (NumberFormatException e) {
+            logger.error("Delete donor failed! Invalid ID", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid donor ID.\"}");
         } catch (Exception e) {
+            logger.error("Delete donor failed! Unexpected error", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}");
         }
@@ -128,6 +141,7 @@ public class DonorControllerHandler {
             Donor donor = donorService.getDonorById(id).orElse(null);
 
             if (donor == null) {
+                logger.error("Donor not found with ID: {}", id);
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Donor not found");
                 return;
             }
@@ -136,11 +150,14 @@ public class DonorControllerHandler {
             req.setAttribute("genders", Gender.values());
             req.setAttribute("bloodGroups", BloodGroup.values());
 
+            logger.info("Accessed edit page for donor ID: {}", id);
             req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
 
         } catch (NumberFormatException e) {
+            logger.error("Requesting donor edit page failed! Invalid ID", e);
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid donor ID");
         } catch (Exception e) {
+            logger.error("Requesting donor edit page failed! Unexpected error", e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error: " + e.getMessage());
         }
     }
@@ -152,6 +169,7 @@ public class DonorControllerHandler {
 
             Donor existingDonor = donorService.getDonorById(id).orElse(null);
             if (existingDonor == null) {
+                logger.error("Donor not found with ID: {}", id);
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Donor not found");
                 return;
             }
@@ -175,20 +193,25 @@ public class DonorControllerHandler {
             req.setAttribute("donor", existingDonor);
 
             if (!errors.isEmpty()) {
+                logger.warn("Failed to update donor: {}", errors);
                 req.setAttribute("errors", errors);
             } else {
                 req.setAttribute("success", "Donor updated successfully!");
                 donorService.getDonorById(id).ifPresent(d -> req.setAttribute("donor", d));
             }
 
+            logger.info("Donor updated successfully with ID: {}", id);
             req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
 
         } catch (NumberFormatException e) {
+            logger.error("Error updating donor: Invalid ID", e);
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid donor ID");
         } catch (IllegalArgumentException e) {
+            logger.error("Error updating donor: Illegal argument", e);
             req.setAttribute("errors", List.of("Invalid input: " + e.getMessage()));
             req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
         } catch (Exception e) {
+            logger.error("Error updating donor: Unexpected error", e);
             req.setAttribute("errors", List.of("Something went wrong, please try again later!"));
             req.getRequestDispatcher("/view/donors/edit.jsp").forward(req, resp);
         }
@@ -198,6 +221,7 @@ public class DonorControllerHandler {
         try {
             return (param == null || param.isBlank()) ? def : Integer.parseInt(param);
         } catch (NumberFormatException e) {
+            logger.warn("parseIntOrDefault failed for param: {}, default used: {}", param, def);
             return def;
         }
     }
