@@ -36,4 +36,9 @@ public class DonorRepositoryImpl implements DonorRepository {
     public List<Donor> findAvailableCompatibleDonors(Long receiverId) {
         return donorDAO.findAvailableCompatibleDonors(receiverId);
     }
+
+    @Override
+    public List<Donor> findAll(){
+        return donorDAO.findAll();
+    }
 }

@@ -13,6 +13,7 @@ import com.sanglink.repository.impl.MedicalAssessmentRepositoryImpl;
 import com.sanglink.repository.impl.UserRepositoryImpl;
 import com.sanglink.service.DonorService;
 import com.sanglink.service.Impl.DonorServiceImpl;
+import com.sanglink.config.JpaBootstrapListener;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.servlet.ServletException;
@@ -24,22 +25,10 @@ import java.io.IOException;
 
 public class DonorServlet extends HttpServlet {
 
-    private DonorService donorService;
-    private EntityManager em;
     private final DonorControllerHandler donorHandler = new DonorControllerHandler();
     private final DonationControllerHandler donationHandler = new DonationControllerHandler();
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-
-        EntityManagerFactory emf = (EntityManagerFactory) getServletContext().getAttribute("emf");
-        if (emf == null) {
-            throw new ServletException("EntityManagerFactory not found in servlet context");
-        }
-
-        em = emf.createEntityManager();
-
+    private DonorService createDonorService(EntityManager em) {
         DonorDAO donorDAO = new DonorDAOImpl(em);
         MedicalAssessmentDAO assessmentDAO = new MedicalAssessmentDAOImpl(em);
         UserDAO userDAO = new UserDAOImpl(em);
@@ -48,51 +37,62 @@ public class DonorServlet extends HttpServlet {
         var assessmentRepo = new MedicalAssessmentRepositoryImpl(assessmentDAO);
         var userRepo = new UserRepositoryImpl(userDAO);
 
-        this.donorService = new DonorServiceImpl(donorRepo, assessmentRepo, userRepo);
+        return new DonorServiceImpl(donorRepo, assessmentRepo, userRepo);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String path = req.getPathInfo();
+        EntityManager em = JpaBootstrapListener.getEntityManagerFactory().createEntityManager();
+        try {
+            DonorService donorService = createDonorService(em);
 
-        if (path == null || "/".equals(path)) {
-            donorHandler.index(req, resp, donorService);
-        }else if (path.equals("/create")) {
-            donorHandler.create(req, resp);
-        }else if (path.equals("/compatible")) {
-            donationHandler.index(req, resp, donorService);
-        }else if (path.equals("/edit")) {
-            donorHandler.edit(req, resp, donorService);
-        }else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            if (path == null || "/".equals(path)) {
+                donorHandler.index(req, resp, donorService);
+            } else if (path.equals("/create")) {
+                donorHandler.create(req, resp);
+            } else if (path.equals("/compatible")) {
+                donationHandler.index(req, resp, donorService);
+            } else if (path.equals("/edit")) {
+                donorHandler.edit(req, resp, donorService);
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } finally {
+            if (em.isOpen()) em.close();
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
         String path = req.getPathInfo();
+        EntityManager em = JpaBootstrapListener.getEntityManagerFactory().createEntityManager();
+        try {
+            DonorService donorService = createDonorService(em);
 
-        if (path.equals("/create")) {
-            donorHandler.store(req, resp, donorService);
-        }if (path.equals("/edit")) {
-            donorHandler.update(req, resp, donorService);
-        }else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            if ("/create".equals(path)) {
+                donorHandler.store(req, resp, donorService);
+            } else if ("/edit".equals(path)) {
+                donorHandler.update(req, resp, donorService);
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } finally {
+            if (em.isOpen()) em.close();
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        donorHandler.drop(req, resp, donorService);
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        if (em != null && em.isOpen()) em.close();
+        EntityManager em = JpaBootstrapListener.getEntityManagerFactory().createEntityManager();
+        try {
+            DonorService donorService = createDonorService(em);
+            donorHandler.drop(req, resp, donorService);
+        } finally {
+            if (em.isOpen()) em.close();
+        }
     }
 }

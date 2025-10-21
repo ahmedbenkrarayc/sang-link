@@ -19,7 +19,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DonorServiceImpl implements DonorService {
@@ -168,5 +170,11 @@ public class DonorServiceImpl implements DonorService {
         donorRepository.save(donor);
 
         return List.of();
+    }
+
+    @Override
+    public Map<DonorStatus, Long> getDonorsByDisponibility(){
+        return donorRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Donor::getStatus, Collectors.counting()));
     }
 }

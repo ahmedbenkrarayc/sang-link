@@ -17,7 +17,7 @@ public class JpaBootstrapListener implements ServletContextListener {
         System.out.println("Initializing JPA...");
 
         Dotenv dotenv = Dotenv.configure()
-                .directory(System.getProperty("/home/ahmed/sanglink"))//user.dir
+                .directory(System.getProperty("user.dir"))// /home/ahmed/sanglink
                 .ignoreIfMissing()
                 .load();
 
@@ -33,6 +33,9 @@ public class JpaBootstrapListener implements ServletContextListener {
         props.put("hibernate.format_sql", "true");
         props.put("hibernate.archive.autodetection", "class");
         props.put("javax.persistence.schema-generation.database.action", "update");
+        props.put("hibernate.cache.use_second_level_cache", "false");
+        props.put("hibernate.cache.use_query_cache", "false");
+
 
         emf = Persistence.createEntityManagerFactory("myPU", props);
         sce.getServletContext().setAttribute("emf", emf);

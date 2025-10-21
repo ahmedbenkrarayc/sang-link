@@ -14,6 +14,8 @@ public interface DonorDAO {
 
     Optional<Donor> findByCin(String cin);
 
+    List<Donor> findAll();
+
     List<Donor> findAll(int page, int pageSize, String search, DonorStatus status);
 
     long countAll(String search, DonorStatus status);

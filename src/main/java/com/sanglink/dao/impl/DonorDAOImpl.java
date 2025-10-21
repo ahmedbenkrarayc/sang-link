@@ -164,4 +164,16 @@ public class DonorDAOImpl implements DonorDAO {
             case O_NEGATIVE -> List.of(BloodGroup.O_NEGATIVE);
         };
     }
+
+    @Override
+    public List<Donor> findAll(){
+        StringBuilder jpql = new StringBuilder("""
+            SELECT DISTINCT d 
+            FROM Donor d
+        """);
+
+        TypedQuery<Donor> query = em.createQuery(jpql.toString(), Donor.class);
+
+        return query.getResultList();
+    }
 }

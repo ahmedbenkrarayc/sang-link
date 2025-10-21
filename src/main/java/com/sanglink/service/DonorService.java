@@ -6,6 +6,7 @@ import com.sanglink.entity.Donor;
 import com.sanglink.entity.enums.DonorStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface DonorService {
@@ -16,4 +17,5 @@ public interface DonorService {
     List<Donor> getAvailableCompatibleDonors(Long receiverId);
     Optional<Donor> getDonorById(Long id);
     List<String> updateDonor(UpdateDonorRequest req);
+    Map<DonorStatus, Long> getDonorsByDisponibility();
 }
